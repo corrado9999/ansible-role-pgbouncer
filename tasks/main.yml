@@ -1,10 +1,23 @@
 ---
+- name: install pgbouncer repository
+  yum:
+    name: "https://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}/pgdg-redhat-repo-latest.noarch.rpm"
+  when: ansible_os_family == 'RedHat'
+
+- name: install pgbouncer
+  yum:
+    name: pgbouncer
+    state: "{{ pgbouncer_install_state }}"
+    update_cache: yes
+  when: ansible_os_family == 'RedHat'
+
 - name: install pgbouncer
   apt:
     pkg: pgbouncer
     state: "{{ pgbouncer_install_state }}"
     update_cache: yes
     cache_valid_time: 3600
+  when: ansible_os_family == 'Debian'
 
 - name: check pgbouncer user exists
   getent:
@@ -21,7 +34,7 @@
   apt:
     pkg: postgresql-client
     state: present
-  when: pgbouncer_install_psql
+  when: (ansible_os_family == 'Debian') and pgbouncer_install_psql
 
 - name: pgbouncer directory exists
   file:
