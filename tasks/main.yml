@@ -19,17 +19,17 @@
     cache_valid_time: 3600
   when: ansible_os_family == 'Debian'
 
-- name: assert pgbouncer user exists
-  user:
-    name: pgbouncer
-    state: present
-    local: yes
-    create_home: no
+- name: check pgbouncer user exists
+  getent:
+    database: passwd
+    key: pgbouncer
+  register: pgbouncer_exists
+  ignore_errors: true
 
 - name: setting pgbouncer user/group
   set_fact: 
-    pgbouncer_owner: "{{ 'pgbouncer' if (getent_passwd['pgbouncer'] | default(false)) else 'postgres' }}"
-    pgbouncer_group: "{{ 'pgbouncer' if (getent_passwd['pgbouncer'] | default(false)) else 'postgres' }}"
+    pgbouncer_owner: "{{ 'postgres' if pgbouncer_exists.failed else 'pgbouncer' }}"
+    pgbouncer_group: "{{ 'postgres' if pgbouncer_exists.failed else 'pgbouncer' }}"
 
 - name: install postgresql-client
   apt:
