@@ -6,19 +6,40 @@
     update_cache: yes
     cache_valid_time: 3600
 
+- name: check pgbouncer user exists
+  getent:
+    database: passwd
+    key: pgbouncer
+    fail_key: no
+
+- name: setting pgbouncer user/group
+  set_fact: 
+    pgbouncer_owner: "{{ 'pgbouncer' if (getent_passwd['pgbouncer'] | default(false)) else 'postgres' }}"
+    pgbouncer_group: "{{ 'pgbouncer' if (getent_passwd['pgbouncer'] | default(false)) else 'postgres' }}"
+
 - name: install postgresql-client
   apt:
     pkg: postgresql-client
     state: present
   when: pgbouncer_install_psql
 
+- name: pgbouncer directory exists
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ pgbouncer_owner }}"
+    group: "{{ pgbouncer_group }}"
+  with_items:
+    - /var/log/pgbouncer
+    - /var/run/pgbouncer
+
 - name: template config files
   template:
     src: "{{ item }}"
     dest: /etc/pgbouncer/{{ item | basename | splitext | first }}
     backup: yes
-    owner: postgres
-    group: postgres
+    owner: "{{ pgbouncer_owner }}"
+    group: "{{ pgbouncer_group }}"
     mode: 0640
   with_fileglob: templates/*
   notify: "{{ pgbouncer_service_state }} pgbouncer"
