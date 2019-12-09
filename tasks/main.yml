@@ -19,11 +19,12 @@
     cache_valid_time: 3600
   when: ansible_os_family == 'Debian'
 
-- name: check pgbouncer user exists
-  getent:
-    database: passwd
-    key: pgbouncer
-    fail_key: no
+- name: assert pgbouncer user exists
+  user:
+    name: pgbouncer
+    state: present
+    local: yes
+    create_home: no
 
 - name: setting pgbouncer user/group
   set_fact: 
