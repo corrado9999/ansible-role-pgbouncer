@@ -57,3 +57,9 @@
     mode: 0640
   with_fileglob: templates/*
   notify: "{{ pgbouncer_service_state }} pgbouncer"
+
+- name: start pgbouncer at startup
+  service:
+    name: pgbouncer
+    enabled: yes
+    state: started
