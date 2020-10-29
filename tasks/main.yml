@@ -9,6 +9,7 @@
     name: pgbouncer
     state: "{{ pgbouncer_install_state }}"
     update_cache: yes
+    disable_gpg_check: yes
   when: ansible_os_family == 'RedHat'
 
 - name: install pgbouncer
